@@ -13,19 +13,18 @@ CREATE TABLE customer (
     Date_Of_Birth DATE NOT NULL,
     Membership_Type varchar(20) NOT NULL,
     Join_Date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  
 );
 CREATE TABLE movie (
     Movie_ID INT AUTO_INCREMENT PRIMARY KEY,
-    Title VARCHAR(255) NOT NULL,
+    Title VARCHAR(255) NOT NULL unique,
     Genre VARCHAR(100) NOT NULL,
     Release_Year INT NOT NULL,
     Director VARCHAR(100) NOT NULL,
     Rating DECIMAL(3, 1) CHECK (Rating >= 0 AND Rating <= 10),
     movie_Language VARCHAR(50) NOT NULL,
     Duration INT NOT NULL,  
-    Rental_Price_Per_Day DECIMAL(10, 2) NOT NULL  
-
+    Rental_Price_Per_Day DECIMAL(10, 2) NOT NULL,
+    Rented boolean
 );
 CREATE TABLE payment_method (
     Payment_Method_ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -148,11 +147,39 @@ BEGIN
     );
 END $$
 DELIMITER ;
+DELIMITER $$
 
-
-
-
-
-
-
-
+CREATE PROCEDURE InsertRental (
+    IN p_Customer_ID INT,
+    IN p_Movie_ID INT,
+    IN p_Rental_Date DATE,
+    IN p_Due_Date DATE,
+    IN p_Return_Date DATE,
+    IN p_Rental_Price DECIMAL(5,2),
+    IN p_Payment_Method_ID INT
+)
+BEGIN
+ DECLARE current_max INT;
+    SELECT MAX(customer_ID) INTO current_max FROM customer;
+    IF current_max IS NULL THEN
+        ALTER TABLE customer AUTO_INCREMENT = 1000;
+    END IF;
+    INSERT INTO rental (
+        Customer_ID,
+        Movie_ID,
+        Rental_Date,
+        Due_Date,
+        Return_Date,
+        Rental_Price,
+        Payment_Method_ID
+    ) VALUES (
+        p_Customer_ID,
+        p_Movie_ID,
+        p_Rental_Date,
+        p_Due_Date,
+        p_Return_Date,
+        p_Rental_Price,
+        p_Payment_Method_ID
+    );
+END$$
+DELIMITER ;
