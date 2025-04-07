@@ -13,6 +13,7 @@ CREATE TABLE customer (
     Date_Of_Birth DATE NOT NULL,
     Membership_Type varchar(20) NOT NULL,
     Join_Date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  
 );
 CREATE TABLE movie (
     Movie_ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -24,6 +25,7 @@ CREATE TABLE movie (
     movie_Language VARCHAR(50) NOT NULL,
     Duration INT NOT NULL,  
     Rental_Price_Per_Day DECIMAL(10, 2) NOT NULL  
+
 );
 CREATE TABLE payment_method (
     Payment_Method_ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -78,6 +80,76 @@ CREATE TABLE Payment (
   FOREIGN KEY (employee_id) REFERENCES Employee(employee_id)
 );
 commit;
+DELIMITER $$
+
+CREATE PROCEDURE AddMovie(
+    IN p_Title VARCHAR(255),
+    IN p_Genre VARCHAR(100),
+    IN p_Release_Year INT,
+    IN p_Director VARCHAR(100),
+    IN p_Rating DECIMAL(3, 1),
+    IN p_Movie_Language VARCHAR(50),
+    IN p_Duration INT,
+    IN p_Rental_Price_Per_Day DECIMAL(10, 2)
+)
+BEGIN
+    DECLARE current_max INT;
+    SELECT MAX(Movie_ID) INTO current_max FROM Movies;
+    IF current_max IS NULL THEN
+        ALTER TABLE Movies AUTO_INCREMENT = 1000;
+    END IF;
+    INSERT INTO Movies (
+        Title, Genre, Release_Year, Director, Rating,
+        movie_Language, Duration, Rental_Price_Per_Day
+    )
+    VALUES (
+        p_Title, p_Genre, p_Release_Year, p_Director, p_Rating,
+        p_Movie_Language, p_Duration, p_Rental_Price_Per_Day
+    );
+END $$
+DELIMITER ;
+DELIMITER $$
+
+CREATE PROCEDURE AddCustomer(
+    IN p_First_Name VARCHAR(100),
+    IN p_Last_Name VARCHAR(100),
+    IN p_Email VARCHAR(255),
+    IN p_Phone_Number VARCHAR(15),
+    IN p_City VARCHAR(15),
+    IN p_Road_Num INT,
+    IN p_Date_Of_Birth DATE,
+    IN p_Membership_Type VARCHAR(20)
+)
+BEGIN
+    DECLARE current_max INT;
+    SELECT MAX(customer_ID) INTO current_max FROM customer;
+    IF current_max IS NULL THEN
+        ALTER TABLE customer AUTO_INCREMENT = 1000;
+    END IF;
+    INSERT INTO customer (
+        First_Name,
+        Last_Name,
+        Email,
+        Phone_Number,
+        city,
+        road_num,
+        Date_Of_Birth,
+        Membership_Type
+    )
+    VALUES (
+        p_First_Name,
+        p_Last_Name,
+        p_Email,
+        p_Phone_Number,
+        p_City,
+        p_Road_Num,
+        p_Date_Of_Birth,
+        p_Membership_Type
+    );
+END $$
+DELIMITER ;
+
+
 
 
 
