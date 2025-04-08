@@ -16,7 +16,7 @@ CREATE TABLE customer (
 );
 CREATE TABLE movie (
     Movie_ID INT AUTO_INCREMENT PRIMARY KEY,
-    Title VARCHAR(255) NOT NULL unique,
+    Title VARCHAR(255) NOT NULL,
     Genre VARCHAR(100) NOT NULL,
     Release_Year INT NOT NULL,
     Director VARCHAR(100) NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE movie (
     movie_Language VARCHAR(50) NOT NULL,
     Duration INT NOT NULL,  
     Rental_Price_Per_Day DECIMAL(10, 2) NOT NULL,
-    Rented boolean
+    Rented BOOLEAN DEFAULT TRUE
 );
 CREATE TABLE payment_method (
     Payment_Method_ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -45,12 +45,15 @@ CREATE TABLE rental (
     FOREIGN KEY (Payment_Method_ID) REFERENCES payment_method(Payment_Method_ID)
 );
 CREATE TABLE return_movie (
+    
     Return_ID INT AUTO_INCREMENT PRIMARY KEY,
     Rental_ID INT,
+    Movie_ID  INT,
     Return_Date DATE NOT NULL,
     Late_Fee DECIMAL(10, 2) DEFAULT 0.00,
     Return_Condition varchar(20),
-    FOREIGN KEY (Rental_ID) REFERENCES rental(Rental_ID)
+    FOREIGN KEY (Rental_ID) REFERENCES rental(Rental_ID),
+    FOREIGN KEY (Movie_ID)  REFERENCES movie(Movie_ID)
 );
 CREATE TABLE employee (
     employee_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -160,9 +163,9 @@ CREATE PROCEDURE InsertRental (
 )
 BEGIN
  DECLARE current_max INT;
-    SELECT MAX(customer_ID) INTO current_max FROM customer;
+    SELECT MAX(rental_ID) INTO current_max FROM Rental;
     IF current_max IS NULL THEN
-        ALTER TABLE customer AUTO_INCREMENT = 1000;
+        ALTER TABLE Rental AUTO_INCREMENT = 1000;
     END IF;
     INSERT INTO rental (
         Customer_ID,
@@ -180,6 +183,64 @@ BEGIN
         p_Return_Date,
         p_Rental_Price,
         p_Payment_Method_ID
+    );
+   UPDATE movie
+    SET Rented=true
+    WHERE Movie_ID=p_Movie_I;
+END$$
+DELIMITER ;
+commit;
+DELIMITER $$
+
+CREATE PROCEDURE insert_return_movie (
+    IN p_Rental_ID INT,
+    IN p_Movie_ID INT,
+    IN p_Return_Date DATE,
+    IN p_Late_Fee DECIMAL(10, 2),
+    IN p_Return_Condition VARCHAR(20)
+)
+BEGIN
+    SELECT MAX(return_ID) INTO current_max FROM return_movie;
+    IF current_max IS NULL THEN
+        ALTER TABLE return_movie AUTO_INCREMENT = 1000;
+        end if;
+    INSERT INTO return_movie (
+        Return_ID, Rental_ID, Movie_ID,Return_Date, Late_Fee, Return_Condition,Movie_ID
+    ) VALUES (
+        new_Return_ID, p_Rental_ID,p_Movie_ID,p_Return_Date, p_Late_Fee, p_Return_Condition
+    );
+    UPDATE movie
+    SET Rented=false
+    WHERE Movie_ID=p_Movie_I;
+END$$
+DELIMITER ;
+DELIMITER $$
+
+CREATE PROCEDURE insert_payment (
+    IN p_rental_id INT,
+    IN p_payment_method_id INT,
+    IN p_amount DECIMAL(10,2),
+    IN p_payment_status VARCHAR(20),
+    IN p_employee_id INT
+)
+BEGIN
+ DECLARE current_max INT;
+    SELECT MAX(payment_ID) INTO current_max FROM payment;
+    IF current_max IS NULL THEN
+        ALTER TABLE payment AUTO_INCREMENT = 1000;
+    END IF;
+    INSERT INTO Payment (
+        rental_id,
+        payment_method_id,
+        amount,
+        payment_status,
+        employee_id
+    ) VALUES (
+        p_rental_id,
+        p_payment_method_id,
+        p_amount,
+        COALESCE(p_payment_status, 'completed'),
+        p_employee_id
     );
 END$$
 DELIMITER ;
