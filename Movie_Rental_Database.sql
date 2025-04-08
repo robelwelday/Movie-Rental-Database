@@ -24,7 +24,7 @@ CREATE TABLE movie (
     movie_Language VARCHAR(50) NOT NULL,
     Duration INT NOT NULL,  
     Rental_Price_Per_Day DECIMAL(10, 2) NOT NULL,
-    Rented BOOLEAN DEFAULT TRUE
+    Rented BOOLEAN DEFAULT false
 );
 CREATE TABLE payment_method (
     Payment_Method_ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -42,7 +42,11 @@ CREATE TABLE rental (
     Payment_Method_ID INT,
     FOREIGN KEY (Customer_ID) REFERENCES customer(Customer_ID),
     FOREIGN KEY (Movie_ID) REFERENCES movie(Movie_ID),
-    FOREIGN KEY (Payment_Method_ID) REFERENCES payment_method(Payment_Method_ID)
+    FOREIGN KEY (Payment_Method_ID) REFERENCES payment_method(Payment_Method_ID),
+    CONSTRAINT chk_due_date CHECK (Due_Date > Rental_Date),
+    CONSTRAINT chk_return_date CHECK (
+        Return_Date IS NULL OR 
+        (Return_Date >= Rental_Date))
 );
 CREATE TABLE return_movie (
     
@@ -76,9 +80,9 @@ CREATE TABLE Payment (
   amount DECIMAL(10,2) NOT NULL CHECK (amount > 0),
   payment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
   payment_status varchar(20) NOT NULL DEFAULT 'completed',
-  employee_id INT NULL,
+  employee_id INT NOT NULL,
   FOREIGN KEY (rental_id) REFERENCES Rental(rental_id),
-  FOREIGN KEY (payment_method_id) REFERENCES PaymentMethod(payment_method_id),
+  FOREIGN KEY (payment_method_id) REFERENCES Payment_Method(payment_method_id),
   FOREIGN KEY (employee_id) REFERENCES Employee(employee_id)
 );
 commit;
@@ -186,7 +190,7 @@ BEGIN
     );
    UPDATE movie
     SET Rented=true
-    WHERE Movie_ID=p_Movie_I;
+    WHERE Movie_ID=p_Movie_ID;
 END$$
 DELIMITER ;
 commit;
@@ -224,8 +228,7 @@ BEGIN
     WHERE Movie_ID = p_Movie_ID;
 END$$
 DELIMITER ;
-
-
+DELIMITER $$
 CREATE PROCEDURE insert_payment (
     IN p_rental_id INT,
     IN p_payment_method_id INT,
@@ -234,7 +237,7 @@ CREATE PROCEDURE insert_payment (
     IN p_employee_id INT
 )
 BEGIN
- DECLARE current_max INT;
+    DECLARE current_max INT;
     SELECT MAX(payment_ID) INTO current_max FROM payment;
     IF current_max IS NULL THEN
         ALTER TABLE payment AUTO_INCREMENT = 1000;
@@ -287,4 +290,9 @@ BEGIN
     WHERE Rental_ID = p_rental_id;
 END$$
 DELIMITER ;
+commit;
+CREATE INDEX idx_movie_rented ON movie(Rented);
+CREATE INDEX idx_rental_customer_id ON rental(Customer_ID);
+CREATE INDEX idx_rental_movie_id ON rental(Movie_ID);
+CREATE INDEX idx_return_rental_id ON return_movie(Rental_ID);
 commit;
