@@ -67,33 +67,31 @@ The database schema includes the following tables:
 3. Optional: Execute stored procedures for inserting return info or calculating late fees.
 ##📄 SQL Script Explanation
 
-The SQL script includes:
-    CREATE DATABASE: Initializes the database.
-    CREATE TABLE: Defines all necessary tables with constraints.
-    ALTER TABLE: Sets up primary and foreign key relationships.
-    DELIMITER $$: Enables use of stored procedures.
-    Stored Procedures:
-        insert_return_movie: Inserts a return record and sets rented to false.
-        calculate_late_fee: Automatically calculates and updates late fees.
+###The SQL script includes:
+    -CREATE DATABASE: Initializes the database.
+    -CREATE TABLE: Defines all necessary tables with constraints.
+    -ALTER TABLE: Sets up primary and foreign key relationships.
+    -DELIMITER $$: Enables use of stored procedures.
+    -Stored Procedures:
+    -insert_return_movie: Inserts a return record and sets rented to false.
+    -calculate_late_fee: Automatically calculates and updates late fees.
     VIEWS 
 ##⚡ Important Indexes
-   To improve query performance, these indexes are included:
-       CREATE INDEX idx_movie_rented ON movie(Rented);
-       CREATE INDEX idx_rental_customer_id ON rental(Customer_ID);
-       CREATE INDEX idx_rental_movie_id ON rental(Movie_ID);
-       CREATE INDEX idx_return_rental_id ON return_movie(Rental_ID)
+   ##To improve query performance, these indexes are included:
+      -CREATE INDEX idx_movie_rented ON movie(Rented);
+      -CREATE INDEX idx_rental_customer_id ON rental(Customer_ID);
+      -CREATE INDEX idx_rental_movie_id ON rental(Movie_ID);
+      -CREATE INDEX idx_return_rental_id ON return_movie(Rental_ID)
 ##Stored Procedures
-1.calculate_late_fee
-2.insert_return_movie
-3.insert custemer 
-4.insert payment 
-5.inser rental
+     1.calculate_late_fee
+     2.insert_return_movie
+     3.insert custemer 
+     4.insert payment 
+     5.inser rental
 ##🤝 Contributing
-
-   Feel free to fork this repository and submit pull requests to improve the database or add new features.
-  📝 License
-
-This project is licensed under the MIT License. You can use, modify, and distribute it freely for personal or commercial projects.
-👨‍💻 Author
+     -Feel free to fork this repository and submit pull requests to improve the database or add new features.
+##📝 License
+     _This project is licensed under the MIT License. You can use, modify, and distribute it freely for personal or commercial projects.
+##👨‍💻 Author
     Name: Robel Welday BahtA
     Email: Robelwelday16@gmail.com
