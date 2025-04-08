@@ -1,4 +1,4 @@
-SET SQL_SAFE_UPDATES = 0;
+SET SQL_SAFE_UPDATES = off;
 SET autocommit = 0;
 commit;
 create database Movie_Rental_System;
@@ -244,3 +244,37 @@ BEGIN
     );
 END$$
 DELIMITER ;
+commit;
+CREATE VIEW rented_movies AS
+SELECT *
+FROM movies
+WHERE Rented = TRUE;
+commit;
+DELIMITER $$
+
+CREATE PROCEDURE calculate_late_fee(IN p_rental_id INT)
+BEGIN
+    DECLARE v_due_date DATE;
+    DECLARE v_return_date DATE;
+    DECLARE v_days_late INT;
+    DECLARE v_late_fee DECIMAL(10,2);
+
+    SELECT Due_Date INTO v_due_date
+    FROM rental
+    WHERE Rental_ID = p_rental_id;
+    SELECT Return_Date INTO v_return_date
+    FROM return_movie
+    WHERE Rental_ID = p_rental_id;
+    SET v_days_late = DATEDIFF(v_return_date, v_due_date);
+
+    IF v_days_late > 0 THEN
+        SET v_late_fee = v_days_late * 5.00;
+    ELSE
+        SET v_late_fee = 0.00;
+    END IF;
+    UPDATE return_movie
+    SET Late_Fee = v_late_fee
+    WHERE Rental_ID = p_rental_id;
+END$$
+DELIMITER ;
+commit;
