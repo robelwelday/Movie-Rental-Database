@@ -196,25 +196,35 @@ CREATE PROCEDURE insert_return_movie (
     IN p_Rental_ID INT,
     IN p_Movie_ID INT,
     IN p_Return_Date DATE,
-    IN p_Late_Fee DECIMAL(10, 2),
     IN p_Return_Condition VARCHAR(20)
 )
 BEGIN
-    SELECT MAX(return_ID) INTO current_max FROM return_movie;
+    DECLARE current_max INT;
+    SELECT MAX(Return_ID) INTO current_max FROM return_movie;
     IF current_max IS NULL THEN
         ALTER TABLE return_movie AUTO_INCREMENT = 1000;
-        end if;
+    END IF;
     INSERT INTO return_movie (
-        Return_ID, Rental_ID, Movie_ID,Return_Date, Late_Fee, Return_Condition,Movie_ID
+        Rental_ID,
+        Movie_ID,
+        Return_Date,
+        Late_Fee, 
+        Return_Condition
     ) VALUES (
-        new_Return_ID, p_Rental_ID,p_Movie_ID,p_Return_Date, p_Late_Fee, p_Return_Condition
+        p_Rental_ID,
+        p_Movie_ID,
+        p_Return_Date,
+        0.00,
+        p_Return_Condition
     );
+
+    CALL calculate_late_fee(p_Rental_ID);
     UPDATE movie
-    SET Rented=false
-    WHERE Movie_ID=p_Movie_I;
+    SET Rented = FALSE
+    WHERE Movie_ID = p_Movie_ID;
 END$$
 DELIMITER ;
-DELIMITER $$
+
 
 CREATE PROCEDURE insert_payment (
     IN p_rental_id INT,
